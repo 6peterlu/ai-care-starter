@@ -2,10 +2,12 @@
 
 import numpy as np
 import os
+import pickle
 import tensorflow as tf
 from keras.models import Sequential
 from keras.applications import ResNet50
 from keras.layers import Convolution2D, MaxPooling2D, Dense, Dropout, Flatten
+from keras.models import load_model
 
 # each sensor has ~ 1000 positive images, ~10000 negative images, and images with close indices look more similar.
 SENSORS = ['02', '04', '06', '08', '10', 
@@ -21,7 +23,9 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 	labels = []
 	images = []
 	samples_allowed = max_samples
-	for label in os.listdir(data_dir)[1:]: # remove .DS_Store
+	for label in os.listdir(data_dir): # remove .DS_Store
+		if label == '.DS_Store':
+			continue
 		for image_filename in os.listdir(data_dir + label + '/'):
 			if len(labels) < samples_allowed:
 				labels.append(label)
@@ -59,8 +63,12 @@ def create_model_resnet_50():
 	print('ResNet50 created')
 	return model
 
-def run_model(model, X_train, y_train, batch_size=32, epochs=10, validation_split=0.1):
-	model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
+def run_model(model, X_train, y_train, batch_size=50, epochs=1, validation_split=0.1):
+	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
+	model.save('../saves/model_data.h5') # save weights
+	with open('../saves/model_history', 'wb') as history_file: # save loss history
+		pickle.dump(history.history, history_file)
+	
 
 labels, images = read_data_for_sensor('toy_sensor')
 #model_toy_conv = create_model_toy_conv()
