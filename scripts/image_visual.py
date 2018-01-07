@@ -2,8 +2,10 @@
 
 import numpy as np
 import cv2
+import os
 
-IMAGE_SRC = '../data/pac_data/02/0/20160930_082811_796.npz'
+
+IMAGE_SRC = '../data/pac_data/02/0/20170109_142713_808.npz'
 IMAGE_DEPTH_MAP = np.load(IMAGE_SRC)['x']
 
 print('image shape: ' + str(IMAGE_DEPTH_MAP.shape))
@@ -23,4 +25,9 @@ def show_ocean(data):
 	cv2.imshow("Ocean Image", depth_map_to_image(data))
 	cv2.waitKey(0) # displays image until any key is pressed
 
+
+def test():
+
+
 show_ocean(IMAGE_DEPTH_MAP)
+#print(IMAGE_DEPTH_MAP)
