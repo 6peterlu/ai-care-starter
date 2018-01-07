@@ -1,12 +1,16 @@
-# scripts to visualize images
+# scripts to visualize images and history plots
 
 import numpy as np
 import cv2
 import os
+import pickle
+import matplotlib.pyplot as plt
 
 
 IMAGE_SRC = '../data/pac_data/02/0/20170109_142713_808.npz'
 IMAGE_DEPTH_MAP = np.load(IMAGE_SRC)['x']
+
+MODEL_HISTORY = '../saves/model_history'
 
 print('image shape: ' + str(IMAGE_DEPTH_MAP.shape))
 print('image type: ' + str(IMAGE_DEPTH_MAP.dtype))
@@ -26,8 +30,27 @@ def show_ocean(data):
 	cv2.waitKey(0) # displays image until any key is pressed
 
 
-def test():
+def plot_loss(history_file):
+	history = pickle.load(open(history_file, "rb"))
 
+	# accuracy plot
+	plt.plot(history.binary_accuracy)
+	plt.plot(history.val_binary_accuracy)
+	plt.title('model accuracy')
+	plt.ylabel('accuracy')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'test'], loc='upper left')
+	plt.show()
 
-show_ocean(IMAGE_DEPTH_MAP)
+	#loss plot
+	plt.plot(history.loss)
+	plt.plot(history.val_loss)
+	plt.title('model loss')
+	plt.ylabel('loss')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'test'], loc='upper left')
+	plt.show()
+
+#plot_loss(MODEL_HISTORY)
+#show_ocean(IMAGE_DEPTH_MAP)
 #print(IMAGE_DEPTH_MAP)
