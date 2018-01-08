@@ -56,7 +56,7 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 	print(images.shape) # ? * 240 * 320 * 1
 	return images, labels
 
-def sample_from_all_sensors(max_samples=10000000):
+def sample_from_all_sensors(max_samples=1000, train_split=0.8):
 	data_dir = '../data/pac_data/'
 	all_files, all_labels = load_all_file_paths(data_dir)
 	images = []
@@ -67,9 +67,11 @@ def sample_from_all_sensors(max_samples=10000000):
 	images = np.expand_dims(np.array(images), axis=3)
 	labels = all_labels[:max_samples]
 	labels = np.array(labels)
-	print(images.shape)
-	print(labels.shape)
-	return images, labels
+	train_images = images[:train_split * max_samples, :, :, :]
+	train_labels = labels[:train_split * max_samples]
+	test_images = images[train_split * max_samples:, :, :, :]
+	test_labels = images[train_split * max_samples:, :, :, :]
+	return train_images, train_labels, test_images, test_labels
 
 
 # a tiny convolutional model to test data pipeline
@@ -96,19 +98,29 @@ def create_model_resnet_50():
 	print('ResNet50 created')
 	return model
 
-def train_model(model, X_train, y_train, batch_size=100, epochs=30, validation_split=0.2):
+def train_model(model, X_train, y_train, batch_size=100, epochs=30, validation_split=0.5):
 	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
 	model.save('../saves/model_data.h5') # save weights
 	with open('../saves/model_history', 'wb') as history_file: # save loss history
 		pickle.dump(history.history, history_file)
 
+# for use on small test sets only, manual inspection
+def run_model(model, X_test, y_test):
+	prediction = model.predict(X_test)
+	print(prediction)
+	print("correct labels below: ")
+	print(y_test)
+
+# for use on large test sets
 def evaluate_model(model, X_test, y_test, batch_size=50):
 	score = model.evaluate(X_test, y_test, batch_size=batch_size)
 	print(score)
 	
-images, labels = sample_from_all_sensors(max_samples = 50)
+train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 100)
 model_resnet_50 = create_model_resnet_50()
-train_model(model_resnet_50, images, labels)
+train_model(model_resnet_50, test_images, test_labels)
+run_model(test_images)
+
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)
 #model_toy_conv = create_model_toy_conv()
