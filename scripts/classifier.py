@@ -67,10 +67,11 @@ def sample_from_all_sensors(max_samples=1000, train_split=0.8):
 	images = np.expand_dims(np.array(images), axis=3)
 	labels = all_labels[:max_samples]
 	labels = np.array(labels)
-	train_images = images[:train_split * max_samples, :, :, :]
-	train_labels = labels[:train_split * max_samples]
-	test_images = images[train_split * max_samples:, :, :, :]
-	test_labels = images[train_split * max_samples:, :, :, :]
+	split_index = int(train_split * max_samples)
+	train_images = images[:split_index, :, :, :]
+	train_labels = labels[:split_index]
+	test_images = images[split_index:, :, :, :]
+	test_labels = labels[split_index:]
 	return train_images, train_labels, test_images, test_labels
 
 
@@ -117,16 +118,19 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	print(score)
 	
 train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 100)
-model_resnet_50 = create_model_resnet_50()
-train_model(model_resnet_50, test_images, test_labels)
-run_model(test_images)
+#model_resnet_50 = create_model_resnet_50()
+#train_model(model_resnet_50, train_images, train_labels)
+#run_model(test_images, test_labels)
 
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)
 #model_toy_conv = create_model_toy_conv()
 #model_resnet_50 = create_model_resnet_50()
 #train_model(model_resnet_50, images, labels)
-#model = load_model('../saves/model_data.h5')
+model = load_model('../saves/model_data.h5')
+#run_model(model, test_images, test_labels)
+print(test_labels)
+print(test_labels.shape)
 #evaluate_model(model, images, labels)
 
 
