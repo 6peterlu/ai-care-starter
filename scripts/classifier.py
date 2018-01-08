@@ -19,6 +19,7 @@ def load_npz(path):
 	return np.load(path)['x']
 
 def read_data_for_sensor(sensor_number, max_samples=1000000):
+	np.random.seed(231)
 	data_dir = '../data/pac_data/' + sensor_number + '/'
 	labels = []
 	images = []
@@ -26,7 +27,10 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 	for label in os.listdir(data_dir): # remove .DS_Store
 		if label == '.DS_Store':
 			continue
-		for image_filename in os.listdir(data_dir + label + '/'):
+		files_list = os.listdir(data_dir + label + '/')
+		np.random.shuffle(files_list) # shuffle so similar samples are not in the same set
+		for image_filename in files_list:
+			print(image_filename)
 			if len(labels) < samples_allowed:
 				labels.append(label)
 				images.append(load_npz(data_dir + label + '/' + image_filename))
@@ -63,15 +67,22 @@ def create_model_resnet_50():
 	print('ResNet50 created')
 	return model
 
-def run_model(model, X_train, y_train, batch_size=50, epochs=1, validation_split=0.1):
+def train_model(model, X_train, y_train, batch_size=50, epochs=10, validation_split=0.1):
 	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
 	model.save('../saves/model_data.h5') # save weights
 	with open('../saves/model_history', 'wb') as history_file: # save loss history
 		pickle.dump(history.history, history_file)
+
+def evaluate_model(model, X_test, y_test, batch_size=50):
+	score = model.evaluate(X_test, y_test, batch_size=batch_size)
+	print(score)
 	
 
-labels, images = read_data_for_sensor('toy_sensor')
+labels, images = read_data_for_sensor('02', max_samples=30)
 #model_toy_conv = create_model_toy_conv()
 model_resnet_50 = create_model_resnet_50()
-run_model(model_resnet_50, images, labels)
+train_model(model_resnet_50, images, labels)
+#model = load_model('../saves/model_data.h5')
+#evaluate_model(model, images, labels)
+
 
