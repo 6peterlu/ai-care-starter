@@ -18,6 +18,7 @@ SENSORS = ['02', '04', '06', '08', '10',
 def load_npz(path):
 	return np.load(path)['x']
 
+# NOTE: this method shuffles the files already
 def load_all_file_paths(directory):
 	np.random.seed(231)
 	all_files = []
@@ -56,22 +57,47 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 	print(images.shape) # ? * 240 * 320 * 1
 	return images, labels
 
-def sample_from_all_sensors(max_samples=1000, train_split=0.8):
+def sample_from_all_sensors(max_samples=1000, train_split=0.8, pos_split=0.4):
+	np.random.seed(231)
 	data_dir = '../data/pac_data/'
 	all_files, all_labels = load_all_file_paths(data_dir)
+	positive_files = []
+	negative_files = []
+	for i in range(len(all_labels)):
+		if all_labels[i] == 1:
+			positive_files.append(all_files[i])
+		else:
+			negative_files.append(all_files[i])
+	print(len(negative_files))
+	print(len(positive_files))
+	pos_split_index = int(pos_split * max_samples)
+	neg_split_index = int((1 - pos_split) * max_samples)
+	sample_files = positive_files[:pos_split_index] + negative_files[:neg_split_index]
+
 	images = []
-	for file in all_files:
+	for file in sample_files:
 		if len(images) >= max_samples:
 			continue
 		images.append(load_npz(file))
 	images = np.expand_dims(np.array(images), axis=3)
-	labels = all_labels[:max_samples]
+	labels = [1] * pos_split_index + [0] * neg_split_index
 	labels = np.array(labels)
+
+	# shuffling positives and negatives
+	shuffle_indices = np.random.permutation(len(labels))
+	labels = labels[shuffle_indices]
+	images = images[shuffle_indices, :, :, :]
+
+	# creating train test splits
 	split_index = int(train_split * max_samples)
 	train_images = images[:split_index, :, :, :]
 	train_labels = labels[:split_index]
 	test_images = images[split_index:, :, :, :]
 	test_labels = labels[split_index:]
+	print(np.sum(train_labels))
+	print(len(train_labels))
+	print(np.sum(test_labels))
+	print(len(test_labels))
 	return train_images, train_labels, test_images, test_labels
 
 
@@ -117,9 +143,9 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	score = model.evaluate(X_test, y_test, batch_size=batch_size)
 	print(score)
 	
-train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 100)
-#model_resnet_50 = create_model_resnet_50()
-#train_model(model_resnet_50, train_images, train_labels)
+train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 1000)
+model_resnet_50 = create_model_resnet_50()
+train_model(model_resnet_50, train_images, train_labels)
 #run_model(test_images, test_labels)
 
 
@@ -127,10 +153,10 @@ train_images, train_labels, test_images, test_labels = sample_from_all_sensors(m
 #model_toy_conv = create_model_toy_conv()
 #model_resnet_50 = create_model_resnet_50()
 #train_model(model_resnet_50, images, labels)
-model = load_model('../saves/model_data.h5')
+#model = load_model('../saves/model_data.h5')
 #run_model(model, test_images, test_labels)
-print(test_labels)
-print(test_labels.shape)
+#print(test_labels)
+#print(test_labels.shape)
 #evaluate_model(model, images, labels)
 
 
