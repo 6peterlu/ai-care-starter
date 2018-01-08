@@ -18,6 +18,20 @@ SENSORS = ['02', '04', '06', '08', '10',
 def load_npz(path):
 	return np.load(path)['x']
 
+def load_all_file_paths(directory):
+	np.random.seed(231)
+	all_files = []
+	for dirpath,_,filenames in os.walk(directory):
+		for f in filenames:
+			if f != '.DS_Store':
+				all_files.append(os.path.join(dirpath, f))
+		print('dirpath: ' + dirpath + ' complete')
+	np.random.shuffle(all_files)
+	all_labels = []
+	for file in all_files:
+		all_labels.append(int(file[20:21])) # hardcoded based on current directory structure
+	return all_files, all_labels
+
 def read_data_for_sensor(sensor_number, max_samples=1000000):
 	np.random.seed(231)
 	data_dir = '../data/pac_data/' + sensor_number + '/'
@@ -37,10 +51,26 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 					print('loaded ' + str(len(labels)) + ' images for sensor ' + sensor_number + ' from total ' + str(len(os.listdir(data_dir + label + '/'))))
 		samples_allowed += max_samples
 	labels = np.array(labels)
-	images = np.expand_dims(np.array(images), 3) # adding a dimension for channels (single channel)
-	print(labels.shape)
+	images = np.expand_dims(np.array(images), axis=3) # adding a dimension for channels (single channel)
+	print(labels.shape) # ? * 1
+	print(images.shape) # ? * 240 * 320 * 1
+	return images, labels
+
+def sample_from_all_sensors(max_samples=10000000):
+	data_dir = '../data/pac_data/'
+	all_files, all_labels = load_all_file_paths(data_dir)
+	images = []
+	for file in all_files:
+		if len(images) >= max_samples:
+			continue
+		images.append(load_npz(file))
+	images = np.expand_dims(np.array(images), axis=3)
+	labels = all_labels[:max_samples]
+	labels = np.array(labels)
 	print(images.shape)
-	return labels, images
+	print(labels.shape)
+	return images, labels
+
 
 # a tiny convolutional model to test data pipeline
 def create_model_toy_conv():
@@ -76,12 +106,17 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	score = model.evaluate(X_test, y_test, batch_size=batch_size)
 	print(score)
 	
-
-labels, images = read_data_for_sensor('02', max_samples=1000)
-#model_toy_conv = create_model_toy_conv()
+images, labels = sample_from_all_sensors(max_samples = 50)
 model_resnet_50 = create_model_resnet_50()
 train_model(model_resnet_50, images, labels)
+
+#labels, images = read_data_for_sensor('02', max_samples=1000)
+#model_toy_conv = create_model_toy_conv()
+#model_resnet_50 = create_model_resnet_50()
+#train_model(model_resnet_50, images, labels)
 #model = load_model('../saves/model_data.h5')
 #evaluate_model(model, images, labels)
+
+
 
 
