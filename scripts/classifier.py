@@ -119,7 +119,7 @@ def create_model_resnet_50():
 	model.add(Convolution2D(3, (3, 3), activation='relu', input_shape=(240, 320, 1), data_format='channels_last'))
 	model.add(ResNet50(weights=None, include_top=False))
 	model.add(Flatten())
-	model.add(Dense(1024, kernel_initializer='random_uniform', bias_initializer='zeros'))
+	model.add(Dense(1024, activation='relu'))
 	model.add(Dense(1, activation='sigmoid', kernel_initializer='random_uniform', bias_initializer='zeros'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy']) # TODO: what metrics?
 	print('ResNet50 created')
