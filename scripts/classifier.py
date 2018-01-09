@@ -125,6 +125,17 @@ def create_model_resnet_50():
 	print('ResNet50 created')
 	return model
 
+def create_model_concat_resnet_50():
+	model = Sequential()
+	model.add(Convolution2D(3, (3, 3), activation='relu', input_shape=(480, 320, 1), data_format='channels_last'))
+	model.add(ResNet50(weights=None, include_top=False))
+	model.add(Flatten())
+	model.add(Dense(1024, activation='relu'))
+	model.add(Dense(1, activation='sigmoid', kernel_initializer='random_uniform', bias_initializer='zeros'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy']) # TODO: what metrics?
+	print('concat ResNet50 created')
+	return model
+
 def create_model_toy_affine():
 	model = Sequential()
 	model.add(Flatten(input_shape=(240, 320, 1)))
@@ -153,14 +164,15 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	print(score)
 	
 train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 200)
-model_resnet_50 = create_model_resnet_50()
+#model_resnet_50 = create_model_resnet_50()
+model_concat_resnet_50 = create_model_concat_resnet_50()
 #model_toy_conv = create_model_toy_conv()
 #model_toy_affine = create_model_toy_affine()
 #train_model(model_toy_affine, train_images, train_labels)
 #run_model(model_toy_affine, test_images, test_labels)
-train_model(model_resnet_50, train_images, train_labels)
+train_model(model_concat_resnet_50, train_images, train_labels)
 #model_resnet_50 = load_model('../saves/model_data.h5')
-run_model(model_resnet_50, test_images, test_labels)
+run_model(model_concat_resnet_50, test_images, test_labels)
 
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)

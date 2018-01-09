@@ -54,7 +54,7 @@ def plot_loss(history_file):
 
 # method will fail if num_samples > number of examples in a folder
 def generate_ocean_sample(sensor_id, num_samples):
-	dir_root = '../data/pac_data/' + sensor_id + '/'
+	dir_root = '../data/augmented/' + sensor_id + '/'
 	os.makedirs('../data/sensor' + sensor_id + 'oceans/')
 	selected_neg = np.random.choice(os.listdir(dir_root + '0/'), num_samples)
 	selected_pos = np.random.choice(os.listdir(dir_root + '1/'), num_samples)
@@ -67,8 +67,43 @@ def generate_ocean_sample(sensor_id, num_samples):
 		img = depth_map_to_image(depth_map)
 		cv2.imwrite('../data/sensor' + sensor_id + 'oceans/' + example[:-4] + '.jpg', img)
 
+# bounding box (x_min, x_max, y_min, y_max)
+def generate_bounding_box_segment(sensor_id, bounding_box):
+	x_min, x_max, y_min, y_max = bounding_box
+	dir_root = '../data/pac_data/' + sensor_id + '/'
+	neg_dir = '../data/augmented/' + sensor_id + '/0/'
+	pos_dir = '../data/augmented/' + sensor_id + '/1/'
+	os.makedirs(neg_dir)
+	os.makedirs(pos_dir)
+	for file in os.listdir(dir_root + '0/'):
+		full_file = dir_root + '0/' + file
+		depth_map = np.load(full_file)['x']
+		original = np.copy(depth_map)
+		outfile = open(neg_dir + file, 'w')
+		depth_map[:y_min, :] = 0.0
+		depth_map[y_max, :] = 0.0
+		depth_map[:, :x_min] = 0.0
+		depth_map[:, x_max:] = 0.0
+		concat = np.concatenate((depth_map, original), axis=0)
+		np.savez(neg_dir + file[:-4], x=concat)
+		outfile.close()
+	for file in os.listdir(dir_root + '1/'):
+		full_file = dir_root + '1/' + file
+		depth_map = np.load(full_file)['x']
+		original = np.copy(depth_map)
+		outfile = open(pos_dir + file, 'w')
+		depth_map[:y_min, :] = 0.0
+		depth_map[y_max, :] = 0.0
+		depth_map[:, :x_min] = 0.0
+		depth_map[:, x_max:] = 0.0
+		concat = np.concatenate((depth_map, original), axis=0)
+		np.savez(neg_dir + file[:-4], x=concat)
+		outfile.close()
+
 #plot_loss(MODEL_HISTORY)
 #show_ocean(IMAGE_DEPTH_MAP)
 #print(IMAGE_DEPTH_MAP)
 
-plot_loss(MODEL_HISTORY)
+#plot_loss(MODEL_HISTORY)
+
+generate_bounding_box_segment('72', (168, 318, 57, 153))
