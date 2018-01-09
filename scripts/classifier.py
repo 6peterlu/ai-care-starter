@@ -129,7 +129,7 @@ def create_model_toy_affine():
 	model = Sequential()
 	model.add(Flatten(input_shape=(240, 320, 1)))
 	model.add(Dense(1024))
-	model.add(Dense(1, activation-'sigmoid'))
+	model.add(Dense(1, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
 	print('toy affine model created')
 	return model
