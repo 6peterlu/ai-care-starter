@@ -125,6 +125,15 @@ def create_model_resnet_50():
 	print('ResNet50 created')
 	return model
 
+def create_model_toy_affine():
+	model = Sequential()
+	model.add(Flatten(input_shape=(240, 320, 1)))
+	model.add(Dense(1024))
+	model.add(Dense(1, activation-'sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
+	print('toy affine model created')
+	return model
+
 def train_model(model, X_train, y_train, batch_size=100, epochs=10, validation_split=0.5):
 	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
 	model.save('../saves/model_data.h5') # save weights
@@ -145,9 +154,10 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	
 train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 400)
 #model_resnet_50 = create_model_resnet_50()
-model_toy_conv = create_model_toy_conv()
-train_model(model_toy_conv, train_images, train_labels)
-run_model(model_toy_conv, test_images, test_labels)
+#model_toy_conv = create_model_toy_conv()
+model_toy_affine = create_model_toy_affine()
+train_model(model_toy_affine, train_images, train_labels)
+run_model(model_toy_affine, test_images, test_labels)
 #train_model(model_resnet_50, train_images, train_labels)
 #model_resnet_50 = load_model('../saves/model_data.h5')
 #run_model(model_resnet_50, test_images, test_labels)
