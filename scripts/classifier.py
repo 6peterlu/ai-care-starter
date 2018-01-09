@@ -80,7 +80,7 @@ def sample_from_all_sensors(max_samples=1000, train_split=0.8, pos_split=0.4):
 			continue
 		images.append(load_npz(file))
 	images = np.expand_dims(np.array(images), axis=3)
-	labels = [1] * pos_split_index + [0] * neg_split_index
+	labels = [1.0] * pos_split_index + [0.0] * neg_split_index
 	labels = np.array(labels)
 
 	# shuffling positives and negatives
@@ -152,15 +152,15 @@ def evaluate_model(model, X_test, y_test, batch_size=50):
 	score = model.evaluate(X_test, y_test, batch_size=batch_size)
 	print(score)
 	
-train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 400)
-#model_resnet_50 = create_model_resnet_50()
+train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 200)
+model_resnet_50 = create_model_resnet_50()
 #model_toy_conv = create_model_toy_conv()
-model_toy_affine = create_model_toy_affine()
-train_model(model_toy_affine, train_images, train_labels)
-run_model(model_toy_affine, test_images, test_labels)
-#train_model(model_resnet_50, train_images, train_labels)
+#model_toy_affine = create_model_toy_affine()
+#train_model(model_toy_affine, train_images, train_labels)
+#run_model(model_toy_affine, test_images, test_labels)
+train_model(model_resnet_50, train_images, train_labels)
 #model_resnet_50 = load_model('../saves/model_data.h5')
-#run_model(model_resnet_50, test_images, test_labels)
+run_model(model_resnet_50, test_images, test_labels)
 
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)
