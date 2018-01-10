@@ -15,6 +15,8 @@ SENSORS = ['02', '04', '06', '08', '10',
 		'24', '39', '52', '59', '62',
 		'63', '72']
 
+DATA_VERSION = 'augmented' # augmented or pac_data
+
 def load_npz(path):
 	return np.load(path)['x']
 
@@ -30,12 +32,12 @@ def load_all_file_paths(directory):
 	np.random.shuffle(all_files)
 	all_labels = []
 	for file in all_files:
-		all_labels.append(int(file[20:21])) # hardcoded based on current directory structure
+		all_labels.append(int(file[21:22])) # hardcoded based on current directory structure
 	return all_files, all_labels
 
 def read_data_for_sensor(sensor_number, max_samples=1000000):
 	np.random.seed(231)
-	data_dir = '../data/pac_data/' + sensor_number + '/'
+	data_dir = '../data/' + DATA_VERSION + '/' + sensor_number + '/'
 	labels = []
 	images = []
 	samples_allowed = max_samples
@@ -59,7 +61,7 @@ def read_data_for_sensor(sensor_number, max_samples=1000000):
 
 def sample_from_all_sensors(max_samples=1000, train_split=0.8, pos_split=0.4):
 	np.random.seed(231)
-	data_dir = '../data/pac_data/'
+	data_dir = '../data/' + DATA_VERSION + '/'
 	all_files, all_labels = load_all_file_paths(data_dir)
 	positive_files = []
 	negative_files = []
@@ -145,7 +147,7 @@ def create_model_toy_affine():
 	print('toy affine model created')
 	return model
 
-def train_model(model, X_train, y_train, batch_size=100, epochs=10, validation_split=0.5):
+def train_model(model, X_train, y_train, batch_size=100, epochs=40, validation_split=0.5):
 	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
 	model.save('../saves/model_data.h5') # save weights
 	with open('../saves/model_history', 'wb') as history_file: # save loss history
@@ -159,11 +161,11 @@ def run_model(model, X_test, y_test):
 	print(y_test)
 
 # for use on large test sets
-def evaluate_model(model, X_test, y_test, batch_size=50):
+def evaluate_model(model, X_test, y_test, batch_size=100):
 	score = model.evaluate(X_test, y_test, batch_size=batch_size)
 	print(score)
 	
-train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 200)
+train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 2000)
 #model_resnet_50 = create_model_resnet_50()
 model_concat_resnet_50 = create_model_concat_resnet_50()
 #model_toy_conv = create_model_toy_conv()
@@ -173,6 +175,7 @@ model_concat_resnet_50 = create_model_concat_resnet_50()
 train_model(model_concat_resnet_50, train_images, train_labels)
 #model_resnet_50 = load_model('../saves/model_data.h5')
 run_model(model_concat_resnet_50, test_images, test_labels)
+evaluate_model(model_concat_resnet, test_images, test_labels)
 
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)
