@@ -9,13 +9,14 @@ matplotlib.use('TkAgg') # literally what (https://stackoverflow.com/questions/41
 # all matplotlib imports need to be below this line, but I don't know why
 import matplotlib.pyplot as plt
 
-IMAGE_SRC = '../data/pac_data/02/0/20170109_142713_808.npz'
-IMAGE_DEPTH_MAP = np.load(IMAGE_SRC)['x']
+IMAGE_SRC = '../data/augmented/02/1/20170109_182454_820.npz'
+
+#IMAGE_DEPTH_MAP = np.load(IMAGE_SRC)
 
 MODEL_HISTORY = '../saves/model_history'
 
-print('image shape: ' + str(IMAGE_DEPTH_MAP.shape))
-print('image type: ' + str(IMAGE_DEPTH_MAP.dtype))
+# print('image shape: ' + str(IMAGE_DEPTH_MAP.shape))
+# print('image type: ' + str(IMAGE_DEPTH_MAP.dtype))
 
 # function from paper, normalizes real values into a 255 RGB space
 def depth_map_to_image(depth_map):
@@ -71,22 +72,22 @@ def generate_ocean_sample(sensor_id, num_samples):
 def generate_bounding_box_segment(sensor_id, bounding_box):
 	x_min, x_max, y_min, y_max = bounding_box
 	dir_root = '../data/pac_data/' + sensor_id + '/'
-	neg_dir = '../data/augmented/' + sensor_id + '/0/'
+	# neg_dir = '../data/augmented/' + sensor_id + '/0/'
 	pos_dir = '../data/augmented/' + sensor_id + '/1/'
-	os.makedirs(neg_dir)
+	# os.makedirs(neg_dir)
 	os.makedirs(pos_dir)
-	for file in os.listdir(dir_root + '0/'):
-		full_file = dir_root + '0/' + file
-		depth_map = np.load(full_file)['x']
-		original = np.copy(depth_map)
-		outfile = open(neg_dir + file, 'w')
-		depth_map[:y_min, :] = 0.0
-		depth_map[y_max, :] = 0.0
-		depth_map[:, :x_min] = 0.0
-		depth_map[:, x_max:] = 0.0
-		concat = np.concatenate((depth_map, original), axis=0)
-		np.savez(neg_dir + file[:-4], x=concat)
-		outfile.close()
+	# for file in os.listdir(dir_root + '0/'):
+	# 	full_file = dir_root + '0/' + file
+	# 	depth_map = np.load(full_file)['x']
+	# 	original = np.copy(depth_map)
+	# 	outfile = open(neg_dir + file, 'w')
+	# 	depth_map[:y_min, :] = 0.0
+	# 	depth_map[y_max, :] = 0.0
+	# 	depth_map[:, :x_min] = 0.0
+	# 	depth_map[:, x_max:] = 0.0
+	# 	concat = np.concatenate((depth_map, original), axis=0)
+	# 	np.savez(neg_dir + file[:-4], x=concat)
+	# 	outfile.close()
 	for file in os.listdir(dir_root + '1/'):
 		full_file = dir_root + '1/' + file
 		depth_map = np.load(full_file)['x']
@@ -97,7 +98,7 @@ def generate_bounding_box_segment(sensor_id, bounding_box):
 		depth_map[:, :x_min] = 0.0
 		depth_map[:, x_max:] = 0.0
 		concat = np.concatenate((depth_map, original), axis=0)
-		np.savez(neg_dir + file[:-4], x=concat)
+		np.savez(pos_dir + file[:-4], x=concat)
 		outfile.close()
 
 #plot_loss(MODEL_HISTORY)
@@ -106,4 +107,4 @@ def generate_bounding_box_segment(sensor_id, bounding_box):
 
 #plot_loss(MODEL_HISTORY)
 
-generate_bounding_box_segment('72', (168, 318, 57, 153))
+generate_bounding_box_segment('02', (56, 240, 144, 239))
