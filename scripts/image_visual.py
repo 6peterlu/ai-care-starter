@@ -15,6 +15,28 @@ IMAGE_SRC = '../data/augmented/02/1/20170109_182454_820.npz'
 
 MODEL_HISTORY = '../saves/model_history'
 
+SENSORS = ['02', '04', '06', '08', '10', 
+		'11', '15', '21', '22', '23', 
+		'24', '39', '52', '59', '62',
+		'63', '72']
+BOUNDING_BOXES = [(56,240,144,239),
+		(155,292,67,144),
+		(195,316,173,239),
+		(152,279,57,140),
+		(0,319,0,239),
+		(46,202,165,239),
+		(158,276,94,181),
+		(132,268,79,155),
+		(0,319,0,239),
+		(119,217,10,87),
+		(107,233,148,229),
+		(0,319,0,239),
+		(139,307,132,233),
+		(80,241,145,233),
+		(66,189,145,228),
+		(10,142,112,207),
+		(168,318,57,153)]
+
 # print('image shape: ' + str(IMAGE_DEPTH_MAP.shape))
 # print('image type: ' + str(IMAGE_DEPTH_MAP.dtype))
 
@@ -72,39 +94,43 @@ def generate_ocean_sample(sensor_id, num_samples):
 def generate_bounding_box_segment(sensor_id, bounding_box):
 	x_min, x_max, y_min, y_max = bounding_box
 	dir_root = '../data/pac_data/' + sensor_id + '/'
-	# neg_dir = '../data/augmented/' + sensor_id + '/0/'
+	neg_dir = '../data/augmented/' + sensor_id + '/0/'
 	pos_dir = '../data/augmented/' + sensor_id + '/1/'
-	# os.makedirs(neg_dir)
+	os.makedirs(neg_dir)
 	os.makedirs(pos_dir)
-	# for file in os.listdir(dir_root + '0/'):
-	# 	full_file = dir_root + '0/' + file
-	# 	depth_map = np.load(full_file)['x']
-	# 	original = np.copy(depth_map)
-	# 	outfile = open(neg_dir + file, 'w')
-	# 	depth_map[:y_min, :] = 0.0
-	# 	depth_map[y_max, :] = 0.0
-	# 	depth_map[:, :x_min] = 0.0
-	# 	depth_map[:, x_max:] = 0.0
-	# 	concat = np.concatenate((depth_map, original), axis=0)
-	# 	np.savez(neg_dir + file[:-4], x=concat)
-	# 	outfile.close()
-	for file in os.listdir(dir_root + '1/'):
-		full_file = dir_root + '1/' + file
+	for file in os.listdir(dir_root + '0/'):
+		full_file = dir_root + '0/' + file
 		depth_map = np.load(full_file)['x']
 		original = np.copy(depth_map)
-		outfile = open(pos_dir + file, 'w')
+		outfile = open(neg_dir + file, 'w')
 		depth_map[:y_min, :] = 0.0
 		depth_map[y_max, :] = 0.0
 		depth_map[:, :x_min] = 0.0
 		depth_map[:, x_max:] = 0.0
 		concat = np.concatenate((depth_map, original), axis=0)
-		np.savez(pos_dir + file[:-4], x=concat)
+		np.savez(neg_dir + file[:-4], x=concat)
 		outfile.close()
+	if (os.path.isdir(dir_root + '1/')):
+		for file in os.listdir(dir_root + '1/'):
+			full_file = dir_root + '1/' + file
+			depth_map = np.load(full_file)['x']
+			original = np.copy(depth_map)
+			outfile = open(pos_dir + file, 'w')
+			depth_map[:y_min, :] = 0.0
+			depth_map[y_max, :] = 0.0
+			depth_map[:, :x_min] = 0.0
+			depth_map[:, x_max:] = 0.0
+			concat = np.concatenate((depth_map, original), axis=0)
+			np.savez(pos_dir + file[:-4], x=concat)
+			outfile.close()
 
+def generate_all_bounding_boxes(sensors, bounding_boxes):
+	for i in range(len(sensors)):
+		generate_bounding_box_segment(sensors[i], bounding_boxes[i])
 #plot_loss(MODEL_HISTORY)
 #show_ocean(IMAGE_DEPTH_MAP)
 #print(IMAGE_DEPTH_MAP)
 
 #plot_loss(MODEL_HISTORY)
 
-generate_bounding_box_segment('02', (56, 240, 144, 239))
+generate_all_bounding_boxes(SENSORS, BOUNDING_BOXES)
