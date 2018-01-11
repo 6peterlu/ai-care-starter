@@ -4,10 +4,10 @@ import numpy as np
 import cv2
 import os
 import pickle
-#import matplotlib
-#matplotlib.use('TkAgg') # literally what (https://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx)
-# all matplotlib imports need to be below this line, but I don't know why
-#import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg') # literally what (https://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx)
+#all matplotlib imports need to be below this line, but I don't know why
+import matplotlib.pyplot as plt
 
 IMAGE_SRC = '../data/augmented/02/1/20170109_182454_820.npz'
 
@@ -132,6 +132,6 @@ def generate_all_bounding_boxes(sensors, bounding_boxes):
 #show_ocean(IMAGE_DEPTH_MAP)
 #print(IMAGE_DEPTH_MAP)
 
-plot_loss(MODEL_HISTORY)
+#plot_loss(MODEL_HISTORY)
 
 generate_all_bounding_boxes(SENSORS, BOUNDING_BOXES)
