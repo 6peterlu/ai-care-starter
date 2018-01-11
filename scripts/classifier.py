@@ -8,6 +8,8 @@ from keras.models import Sequential
 from keras.applications import ResNet50
 from keras.layers import Convolution2D, MaxPooling2D, Dense, Dropout, Flatten
 from keras.models import load_model
+from sklearn.metrics import roc_auc_score
+
 
 # each sensor has ~ 1000 positive images, ~10000 negative images, and images with close indices look more similar.
 SENSORS = ['02', '04', '06', '08', '10', 
@@ -158,10 +160,8 @@ def train_model(model, X_train, y_train, batch_size=100, epochs=40, validation_s
 # for use on small test sets only, manual inspection
 def run_model(model, X_test, y_test):
 	prediction = model.predict(X_test)
-	print(np.matrix.transpose(prediction))
-	print(np.matrix.transpose(np.round(prediction + 0.4)))
-	print("correct labels below: ")
-	print(y_test)
+	roc_auc = roc_auc_score(y_test, prediction)
+	print(roc_auc)
 
 # for use on large test sets
 def evaluate_model(model, X_test, y_test, batch_size=100):
@@ -170,15 +170,17 @@ def evaluate_model(model, X_test, y_test, batch_size=100):
 	
 train_images, train_labels, test_images, test_labels = sample_from_all_sensors(max_samples = 2000)
 #model_resnet_50 = create_model_resnet_50()
-model_concat_resnet_50 = create_model_concat_resnet_50()
+#model_concat_resnet_50 = create_model_concat_resnet_50()
 #model_toy_conv = create_model_toy_conv()
 #model_toy_affine = create_model_toy_affine()
 #train_model(model_toy_affine, train_images, train_labels)
 #run_model(model_toy_affine, test_images, test_labels)
-train_model(model_concat_resnet_50, train_images, train_labels)
-#model_concat_resnet_50 = load_model('../saves/model_data.h5')
+#train_model(model_concat_resnet_50, train_images, train_labels)
+model_concat_resnet_50 = load_model('../saves/concat_resnet_dropout_data.h5')
+model_resnet_50 = load_model('../saves/model_data.h5')
 #run_model(model_concat_resnet_50, test_images, test_labels)
-evaluate_model(model_concat_resnet_50, test_images, test_labels)
+run_model(model_concat_resnet_50, test_images, test_labels)
+run_model(model_resnet_50, test_images, test_labels)
 
 
 #labels, images = read_data_for_sensor('02', max_samples=1000)
