@@ -30,7 +30,7 @@ BOUNDING_BOXES = [(56,240,144,239),
 		(0,319,0,239),
 		(0,319,0,239),
 		(0,319,0,239),
-		(139,297,151,240)
+		(139,297,151,239),
 		(133,307,132,233),
 		(80,241,145,233),
 		(66,189,145,228),
@@ -134,4 +134,4 @@ def generate_all_bounding_boxes(sensors, bounding_boxes):
 
 #plot_loss(MODEL_HISTORY)
 
-generate_all_bounding_boxes(SENSORS, BOUNDING_BOXES)
+generate_all_bounding_boxes(SENSORS[11:12], BOUNDING_BOXES[11:12])

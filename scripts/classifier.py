@@ -141,7 +141,9 @@ def create_model_concat_resnet_50():
 	model.add(Convolution2D(3, (3, 3), activation='relu', input_shape=(480, 320, 1), data_format='channels_last'))
 	model.add(ResNet50(weights=None, include_top=False))
 	model.add(Flatten())
+	model.add(Dropout(0.5))
 	model.add(Dense(1024, activation='relu'))
+	model.add(Dropout(0.5))
 	model.add(Dense(1, activation='sigmoid', kernel_initializer='random_uniform', bias_initializer='zeros'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy']) # TODO: what metrics?
 	print('concat ResNet50 created')
@@ -170,14 +172,15 @@ def train_svm(X_train, y_train, X_test, y_test, is_testing=True):
 
 def train_model(model, X_train, y_train, batch_size=100, epochs=40, validation_split=0.5):
 	history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
-	model.save('../saves/model_data.h5') # save weights
-	with open('../saves/model_history', 'wb') as history_file: # save loss history
+	model.save('../saves/concat_resnet_dropout_data.h5') # save weights
+	with open('../saves/concat_resnet_dropout_history', 'wb') as history_file: # save loss history
 		pickle.dump(history.history, history_file)
 
 # for use on small test sets only, manual inspection
 def run_model(model, X_test, y_test):
 	prediction = model.predict(X_test)
-	print(prediction)
+	print(np.matrix.transpose(prediction))
+	print(np.matrix.transpose(np.round(prediction + 0.4)))
 	print("correct labels below: ")
 	print(y_test)
 
