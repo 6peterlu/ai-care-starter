@@ -28,10 +28,10 @@ BOUNDING_BOXES = [(56,240,144,239),
 		(158,276,94,181),
 		(132,268,79,155),
 		(0,319,0,239),
-		(119,217,10,87),
-		(107,233,148,229),
 		(0,319,0,239),
-		(139,307,132,233),
+		(0,319,0,239),
+		(139,297,151,240)
+		(133,307,132,233),
 		(80,241,145,233),
 		(66,189,145,228),
 		(10,142,112,207),
@@ -58,6 +58,7 @@ def show_ocean(data):
 def plot_loss(history_file):
 	history = pickle.load(open(history_file, "rb"))
 	# accuracy plot
+	print(history['val_binary_accuracy'])
 	plt.plot(history['binary_accuracy'])
 	plt.plot(history['val_binary_accuracy'])
 	plt.title('model accuracy')
@@ -131,6 +132,6 @@ def generate_all_bounding_boxes(sensors, bounding_boxes):
 #show_ocean(IMAGE_DEPTH_MAP)
 #print(IMAGE_DEPTH_MAP)
 
-#plot_loss(MODEL_HISTORY)
+plot_loss(MODEL_HISTORY)
 
 generate_all_bounding_boxes(SENSORS, BOUNDING_BOXES)
