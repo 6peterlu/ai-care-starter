@@ -5,7 +5,7 @@ import cv2
 import os
 import pickle
 import matplotlib
-matplotlib.use('TkAgg') # literally what (https://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx)
+matplotlib.use('TkAgg') # src: (https://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx)
 #all matplotlib imports need to be below this line, but I don't know why
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,7 @@ IMAGE_SRC = '../data/augmented/02/1/20170109_182454_820.npz'
 
 #IMAGE_DEPTH_MAP = np.load(IMAGE_SRC)
 
-MODEL_HISTORY = '../saves/model_history'
+MODEL_HISTORY = '../saves/concat_resnet_dropout_history'
 
 SENSORS = ['02', '04', '06', '08', '10', 
 		'11', '15', '21', '22', '23', 
@@ -49,12 +49,13 @@ def depth_map_to_image(depth_map):
 	img = cv2.applyColorMap(img, cv2.COLORMAP_OCEAN)
 	return img
 
+# shows a single ocean image given a depth map
 def show_ocean(data):
 	print('showing ocean image')
 	cv2.imshow("Ocean Image", depth_map_to_image(data))
 	cv2.waitKey(0) # displays image until any key is pressed
 
-
+# plots the loss from a saved keras history file
 def plot_loss(history_file):
 	history = pickle.load(open(history_file, "rb"))
 	# accuracy plot
@@ -77,6 +78,7 @@ def plot_loss(history_file):
 	plt.show()
 
 # method will fail if num_samples > number of examples in a folder
+# generates a sample of ocean images from a single sensor for visualization
 def generate_ocean_sample(sensor_id, num_samples):
 	dir_root = '../data/augmented/' + sensor_id + '/'
 	os.makedirs('../data/sensor' + sensor_id + 'oceans/')
@@ -92,6 +94,7 @@ def generate_ocean_sample(sensor_id, num_samples):
 		cv2.imwrite('../data/sensor' + sensor_id + 'oceans/' + example[:-4] + '.jpg', img)
 
 # bounding box (x_min, x_max, y_min, y_max)
+# creates a set of bounding boxes for a single sensor_id
 def generate_bounding_box_segment(sensor_id, bounding_box):
 	x_min, x_max, y_min, y_max = bounding_box
 	dir_root = '../data/pac_data/' + sensor_id + '/'
@@ -125,13 +128,33 @@ def generate_bounding_box_segment(sensor_id, bounding_box):
 			np.savez(pos_dir + file[:-4], x=concat)
 			outfile.close()
 
+# generates the augmented folder data with cropped boxes
 def generate_all_bounding_boxes(sensors, bounding_boxes):
 	for i in range(len(sensors)):
 		generate_bounding_box_segment(sensors[i], bounding_boxes[i])
-#plot_loss(MODEL_HISTORY)
-#show_ocean(IMAGE_DEPTH_MAP)
-#print(IMAGE_DEPTH_MAP)
 
-#plot_loss(MODEL_HISTORY)
+# plots ROC curves
+def plot_roc_curves():
+	fpr = np.load('../roc/fpr.npy')
+	tpr = np.load('../roc/tpr.npy')
+	plt.figure() # src: http://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html#sphx-glr-auto-examples-model-selection-plot-roc-py
+	lw = 2
+	plt.plot(fpr, tpr, color='darkorange',
+         lw=lw, label='ROC curve (area = %0.2f)' % 0.615)
+	plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+	plt.xlim([0.0, 1.0])
+	plt.ylim([0.0, 1.05])
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('ROC Curve')
+	plt.legend(loc="lower right")
+	plt.show()
 
-generate_all_bounding_boxes(SENSORS[11:12], BOUNDING_BOXES[11:12])
+# STEP 1: GENERATE AUGMENTED DATA (comment this out after this is done running)
+generate_all_bounding_boxes(SENSORS, BOUNDING_BOXES)
+
+# STEP 2: TRAIN MODEL IN classifier.py ON AUGMENTED DATA
+
+# STEP 3: REVIEW RESULTS OF DATA (uncomment this once after model is done training)
+# plot_loss(MODEL_HISTORY)
+# plot_roc_curves()
